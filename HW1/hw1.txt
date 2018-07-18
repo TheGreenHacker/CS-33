@@ -1,0 +1,44 @@
+Jack Li
+604754714
+04/10/16
+CS 33
+Dis 1D
+Homework #1
+
+2.71
+a. The code fails for negative numbers as it never sign extends due to the masking operation with the constant 0xFF, which zeroes the upper 3 bytes of word.
+b.
+int xbyte(packed_t word, int bytenum)
+{
+    return (word << ((3 - bytenum) << 3)) >> 24;
+}
+
+2.82
+a. The expression does not always yield 1. For example, let x = TMin and y = -1. Then 
+(x < y) == (-x > -y)
+(TMin < -1 ) == (-TMin > -(-1)) //-TMin is the same as TMin
+1 == (TMin > 1)
+1 == 0   //contradiction
+0
+b. The expression always yields 1. This can be proven by
+((x + y) << 4) + y - x   //left shifting by a value is same as multiplying by 2 raised to the power of that value
+= 16 * (x + y) + y - x   
+= 16 * x + 16 * y + y - x
+= 17 * y + 15 * x.
+c. The expression always yields 1. The important thing to note is that ~x = -x - 1. The left hand side can be rewritten as
+~x + ~y + 1
+= -x - 1 - y - 1 + 1
+= -x - y - 1
+The right hand side can be rewritten as
+~(x + y)
+= -(x + y + 1)
+= -x - y - 1
+As it can be seen, both sides of the expression are equivalent.
+d. The expression always yields 1. When comparing unsigned values with signed values, C always casts any signed values to unsigned. Also, it is important to realize that the underlying bit representations of both expressions are the same. So the right hand side can be rewritten as
+-(unsigned)(y - x)
+= (unsigned)(-)(y - x) 
+= (unsigned)(-y + x)
+= (unsigned)x - (unsigned) y
+= ux - uy  //equivalent to left hand side
+e. The expression always yields 1. Right shifting by 2 and then left shifting by 2 sets the least 2 significant bits of x to 0. After the left shift, x can at most be its original value if it's least 2 significant bits were both 0's. Otherwise, it is less than its original value.
+

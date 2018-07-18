@@ -1,0 +1,23 @@
+Jack Li
+604754714
+April 26 2018
+CS 33 (1D)
+
+Homework 2
+hw2.txt
+
+>>> Magic 8 Ball
+
+To get the array of characters at magic8ball[3][4], aka a string, we must first do some octal arithmetic to get the displacement from magic8ball's initial address.
+   3 * 8 ^ 2 + 4 * 8
+  = 192 + 32
+  = 224
+  = 0xe0
+
+magic8ball begins at 0x7fffffffe000 so magic8ball[3][4] is at 
+    0x7fffffffe000 + 0xe0 
+  = 0x7fffffffe0e0
+
+Going down to that address, we can see the characters in the strings represented in their ASCII values as 0x57,0x72, 0x6f, 0x6e, and 0x67.
+
+Using an ASCII table to obtain the characters, the correct string is "Wrong".

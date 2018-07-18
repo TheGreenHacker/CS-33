@@ -1,0 +1,58 @@
+Jack Li
+604754714
+CS33 (Dis 1D)
+June 2 2018
+hw4.txt
+
+1. The following code prints the index of the first non-zero element in an array
+.globl main
+main:                         # start of code
+        addu   $s7, $0, $ra   # store return address
+
+        add    $s3, $0, $0    # store 0 in s3
+
+        addi   $s4, $0, 1     # store 1 in s4
+        add    $s5, $0, $0    # store 0 in s5
+        la     $s6, save      # get elements in array "save"
+        
+        .data                 # data segment
+        # IMPORTANT: the following denotes the size of the integers. So when you're indexing, you're indexing by the "index" divided by 4 to account for the size of the data type (in this case 4).
+        .align  2             # using 32-bit (4-byte) integers
+        .globl  save          # save is a global variable
+# the next line creates an array of 10 words that can be referred to
+as “save”
+# the array is initialized to the 10 values after .word
+# so the first array entry is a 0 and the last entry is a 2
+save: .word 0,0,0,0,0,0,0,6,3,2
+
+      .text                   # instructions follow this line
+      
+Loop:
+      add     $t8, $s3, $s3   # $s3 * 2 (to compute address offset of array in terms of data type size, 4 in this case since we're dealing with integers)
+      add     $t8, $t8, $t8   # $t8 * 2 
+      add     $t8, $t8, $s6   # $t8 + $s6 (array address offset NOTE: not a "true" index)
+      lw      $t9, 0($t8)     # store array element at index x in t9
+      bne     $t9, $s5, Exit  # loop condition: if element is not 0
+
+      add     $s3, $s3, $s4   # $s3 + $s4
+      j       Loop            # continue looping
+Exit:
+      .data
+      .globl  message1
+message1:       .asciiz "\nThe value of i is: "    # statement to be pruned out
+      .text
+      li      $v0, 4          # store 4 in $v0 (sys call # for print string)
+      la      $a0, message1   # store address of message1 in $a0 as argument for print
+      syscall                 # print the message
+      li      $v0, 1          # store 1 in $v0 (sys call # for print integer)
+      add     $a0, $0, $s3    # $s3 to be printed
+      syscall                 # print value stored in $s3
+      addu $ra, $0, $s7       # $ra = $s7
+      jr $ra                  # jump to address stored in $ra (return out of main function)
+      add $0, $0, $0
+
+
+      "\nThe value of i is: 7"
+2. e. jyix
+
+   For all 3 matrices, j and y are used to compute the second indices. So to get the worst locality, access all of column wise first, getting rid of any locality.  This can also be done by first finding the best loop ordering, which is ixjy and then "reversing" each pair of indices to get the answer.

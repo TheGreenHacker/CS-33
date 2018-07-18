@@ -1,0 +1,21 @@
+Loading data...Verifying load integrity...
+Starting the deblur parallelization test
+273852 pixels have converged on iteration 0
+273866 pixels have converged on iteration 1
+274011 pixels have converged on iteration 2
+274347 pixels have converged on iteration 3
+274757 pixels have converged on iteration 4
+275534 pixels have converged on iteration 5
+276158 pixels have converged on iteration 6
+276299 pixels have converged on iteration 7
+276347 pixels have converged on iteration 8
+276386 pixels have converged on iteration 9
+Finished Sequential test, starting parallel test...
+16513 
+----------------------- 
+2080639 
+----------------------- 
+2080639 
+----------------------- 
+2080638 
+----------------------- 
